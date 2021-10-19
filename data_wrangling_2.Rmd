@@ -1,5 +1,5 @@
 ---
-title: "data wrangingling 2"
+title: "data wrangling 2"
 output: github_document
 ---
 
@@ -20,6 +20,128 @@ knitr::opts_chunk$set(
 
 National Survey on Drug Use and Health (2013-2014 & 2014-2015)
 
+```{r}
+url = "http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads/2k15StateFiles/NSDUHsaeShortTermCHG2015.htm"
+
+drug_use_html = 
+  read_html(url)
+
+drug_use_df = 
+  drug_use_html %>% 
+  html_table() %>% 
+  first() %>% 
+  slice(-1)
+```
+
+The read_html function goes fully onto the internet every time. 
+
+First row is the footnote (first row everywhere)
+
+## Star Wars
+
+Get some star wars data... 
+
+```{r}
+sw_url = "https://www.imdb.com/list/ls070150896/"
+
+sw_html = 
+  read_html(sw_url)
+```
+
+Not a well formatted thing, so we nee to use selector gadget 
+
+```{r}
+sw_titles = sw_html %>% 
+  html_elements(".lister-item-header a") %>% 
+  html_text()
+
+sw_revenue = sw_html %>% 
+  html_elements(".text-small:nth-child(7) span:nth-child(5)") %>% 
+  html_text()
+
+sw_df = 
+  tibble(
+    title = sw_titles, 
+    revenue = sw_revenue
+  )
+```
+
+## Napoleon Dynamite 
+
+Dynamite reviews 
+
+```{r}
+dynamite_url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=1"
+
+dynamite_html = 
+  read_html(dynamite_url)
+
+dynamite_review_titles = 
+  dynamite_html %>% 
+  html_elements(".a-text-bold span") %>% 
+  html_text
+
+dynamite_stars = 
+  dynamite_html %>% 
+  html_elements("#cm_cr-review_list .review-rating") %>% 
+  html_text
+
+dynamite_df = 
+  tibble(titles = dynamite_review_titles, 
+         stars = dynamite_stars)
+
+```
+
+## APIs 
+
+Get some data from an API about water. 
+
+```{r}
+water_df = 
+  GET("https://data.cityofnewyork.us/resource/ia2d-e54m.csv") %>% 
+  content()
+```
+
+Let's see what JSON looks like...
+
+```{r}
+water_df = 
+  GET("https://data.cityofnewyork.us/resource/ia2d-e54m.json") %>% 
+  content("text") %>% 
+  jsonlite::fromJSON() %>% 
+  as_tibble()
+```
+
+## BRFSS data via API 
+
+```{r}
+brfss_df = 
+  GET("https://chronicdata.cdc.gov/resource/acme-vg9e.csv",
+      query = list("$limit" = 5000)) %>% 
+  content() 
+```
+
+There are actuallly 134,000 rows, but it only gives the first 1,000. 
+(Bandwidth protection)
+
+## Pokemon API 
+
+```{r}
+pokemon_data = 
+  GET("https://pokeapi.co/api/v2/pokemon/1") %>% 
+  content()
+  
+pokemon_data[["name"]]
+pokemon_data[["height"]]
+pokemon_data[["abilities"]]
+```
+
+not nicely formatted as a csv
+
+R package - wrappers for APIs 
+
+rnoaa package 
+rtweet (twitter data)
 
 
 
