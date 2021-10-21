@@ -277,3 +277,120 @@ marj_df %>%
 ```
 
 <img src="strings_and_factors_files/figure-gfm/unnamed-chunk-13-1.png" width="90%" />
+
+## Restaurant Inspections
+
+``` r
+data("rest_inspec")
+rest_inspec
+```
+
+    ## # A tibble: 397,584 × 18
+    ##    action        boro   building   camis critical_flag cuisine_descrip… dba     
+    ##    <chr>         <chr>  <chr>      <int> <chr>         <chr>            <chr>   
+    ##  1 Violations w… MANHA… 425       4.15e7 Not Critical  Italian          SPINELL…
+    ##  2 Violations w… MANHA… 37        4.12e7 Critical      Korean           SHILLA …
+    ##  3 Violations w… MANHA… 15        4.11e7 Not Critical  CafÃ©/Coffee/Tea CITY PE…
+    ##  4 Violations w… MANHA… 35        4.13e7 Critical      Korean           MADANGS…
+    ##  5 Violations w… MANHA… 1271      5.00e7 Critical      American         THE HAR…
+    ##  6 Violations w… MANHA… 155       5.00e7 Not Critical  Donuts           DUNKIN …
+    ##  7 Violations w… MANHA… 1164      5.00e7 Critical      Salads           SWEETGR…
+    ##  8 Violations w… MANHA… 37        4.12e7 Not Critical  Korean           SHILLA …
+    ##  9 Violations w… MANHA… 299       5.01e7 Not Critical  American         PRET A …
+    ## 10 Violations w… MANHA… 53        4.04e7 Not Critical  Korean           HAN BAT…
+    ## # … with 397,574 more rows, and 11 more variables: inspection_date <dttm>,
+    ## #   inspection_type <chr>, phone <chr>, record_date <dttm>, score <int>,
+    ## #   street <chr>, violation_code <chr>, violation_description <chr>,
+    ## #   zipcode <int>, grade <chr>, grade_date <dttm>
+
+rest\_inspec %&gt;% slice(1:100) %&gt;% view() (how to look at things)
+
+``` r
+rest_inspec %>% 
+  janitor::tabyl(boro, grade)
+```
+
+    ##           boro     A     B    C Not Yet Graded   P    Z   NA_
+    ##          BRONX 13688  2801  701            200 163  351 16833
+    ##       BROOKLYN 37449  6651 1684            702 416  977 51930
+    ##      MANHATTAN 61608 10532 2689            765 508 1237 80615
+    ##        Missing     4     0    0              0   0    0    13
+    ##         QUEENS 35952  6492 1593            604 331  913 45816
+    ##  STATEN ISLAND  5215   933  207             85  47  149  6730
+
+``` r
+rest_inspec = 
+  rest_inspec %>% 
+  filter(
+    str_detect(grade, "[ABC]"), 
+   !(boro == "Missing")) %>% 
+  mutate(boro = str_to_title(boro))
+
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>% 
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+<img src="strings_and_factors_files/figure-gfm/unnamed-chunk-16-1.png" width="90%" />
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>% 
+  mutate(
+    boro = fct_infreq(boro)
+  ) %>% 
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+<img src="strings_and_factors_files/figure-gfm/unnamed-chunk-16-2.png" width="90%" />
+
+What about changing a label…
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>% 
+  mutate(
+    boro = fct_infreq(boro), 
+    boro = str_replace(boro, "Manhattan", "The City")
+  ) %>% 
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+<img src="strings_and_factors_files/figure-gfm/unnamed-chunk-17-1.png" width="90%" />
+
+This worked, but undid the factor
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>% 
+  mutate(
+    boro = fct_infreq(boro), 
+    boro = replace(boro, which(boro == "Manhattan"), "The City")
+  ) %>% 
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+    ## Warning in `[<-.factor`(`*tmp*`, list, value = "The City"): invalid factor
+    ## level, NA generated
+
+<img src="strings_and_factors_files/figure-gfm/unnamed-chunk-18-1.png" width="90%" />
+
+If you’re dealing with factors and you want to change the labels, it’s
+annoying
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>% 
+  mutate(
+    boro = fct_infreq(boro), 
+    boro = fct_recode(boro, "The City" = "Manhattan")
+  ) %>% 
+  ggplot(aes(x = boro, fill = grade)) + 
+  geom_bar()
+```
+
+<img src="strings_and_factors_files/figure-gfm/unnamed-chunk-19-1.png" width="90%" />
