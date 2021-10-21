@@ -1,0 +1,28 @@
+---
+title: "strings and factors"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(httr)
+
+
+knitr::opts_chunk$set(
+  fig.width = 6, 
+  fig.asp = .6, 
+  out.width = "90%"
+)
+```
+
+## 
+
+
+
+
+
+
+
+
+
